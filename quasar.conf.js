@@ -43,7 +43,12 @@ module.exports = function (ctx) {
       proxy: {
         '/api': {
           target: 'http://localhost:8081',
-          changeOrigin: true
+          changeOrigin: true,
+          logLevel: 'debug',
+          ws: true,
+          pathRewrite: {
+            '^/api': '/'
+          }
         },
         '/etherpad': {
           target: 'http://localhost:9001',
@@ -87,7 +92,9 @@ module.exports = function (ctx) {
         'QTd',
         'QTr',
         'QSearch',
-        'QTree'
+        'QTree',
+        'QRadio',
+        'QOptionGroup'
       ],
       directives: [
         'Ripple'

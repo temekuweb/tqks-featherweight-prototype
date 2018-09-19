@@ -3,16 +3,70 @@
         <h6>Node Edit Form</h6>
         
         <div>
-            <q-input float-label="Subject" v-model="label" required/>
+          <b>Subject</b><br/>
+          <q-input v-model="label" required/>
         </div>
         <div>
-            <q-input float-label="URL (Optional)"  v-model="url" />
+          <b>URL</b> (Optional)<br/>
+          <q-input v-model="url" />
         </div>
         <div>
-            <q-editor float-label="Details" v-model="details" />
+          <b>Details</b><br/>
+          <q-editor v-model="details" 
+            :toolbar="[
+              ['bold', 'italic', 'strike', 'underline', 'subscript', 'superscript'],
+              ['token', 'hr', 'link', 'custom_btn'],
+              ['fullscreen'],
+              [
+                {
+                  label: $q.i18n.editor.formatting,
+                  icon: $q.icon.editor.formatting,
+                  list: 'no-icons',
+                  options: ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'code']
+                },
+                {
+                  label: $q.i18n.editor.fontSize,
+                  icon: $q.icon.editor.fontSize,
+                  fixedLabel: true,
+                  fixedIcon: true,
+                  list: 'no-icons',
+                  options: ['size-1', 'size-2', 'size-3', 'size-4', 'size-5', 'size-6', 'size-7']
+                },
+                {
+                  label: $q.i18n.editor.defaultFont,
+                  icon: $q.icon.editor.font,
+                  fixedIcon: true,
+                  list: 'no-icons',
+                  options: ['default_font', 'arial', 'arial_black', 'comic_sans', 'courier_new', 'impact', 'lucida_grande', 'times_new_roman', 'verdana']
+                },
+                'removeFormat'
+              ],
+              ['quote', 'unordered', 'ordered', 'outdent', 'indent'],
+              [
+                {
+                  label: $q.i18n.editor.align,
+                  icon: $q.icon.editor.align,
+                  fixedLabel: true,
+                  list: 'only-icons',
+                  options: ['left', 'center', 'right', 'justify']
+                }
+              ],
+              ['undo', 'redo']
+              ]"
+              :fonts="{
+                arial: 'Arial',
+                arial_black: 'Arial Black',
+                comic_sans: 'Comic Sans MS',
+                courier_new: 'Courier New',
+                impact: 'Impact',
+                lucida_grande: 'Lucida Grande',
+                times_new_roman: 'Times New Roman',
+                verdana: 'Verdana'
+              }"
+          />
         </div>
         <div>
-            <q-btn label="Submit" @click="doSubmit" /><q-btn label="Cancel" @click="$router.replace('/home')" />
+          <q-btn label="Submit" @click="doSubmit" /><q-btn label="Cancel" @click="$router.replace('/home')" />
         </div>
     </q-page>
 </template>
@@ -54,15 +108,18 @@ export default {
           this.url = response.url
         })
     },
-    doSubmit: function () {
+    async doSubmit () {
       // alert(this.label)
       // alert(this.details);
       var typ = this.$data.type
+      const params = {}
+        params.depth = 0
       if (typ === 'update') {
-         conversation.find({ query: { 'id':this.myId } })
+        
+        conversation.find({ query: { 'id':this.myId, skippop:true } })
           .then ((response) => {
             var json = response.data[0]
-            console.info('NF-1', json)
+            // alert('NF-1', JSON.stringify(json))
             json.label = this.label
             json.details = this.details
             json.url = this.url
@@ -103,9 +160,10 @@ export default {
           // alert(JSON.stringify(response))
           const id= response.id;
           // alert(idx+' '+id)
-          conversation.find({ query: { 'id': idx } })
+          conversation.find({ query: { 'id':this.parentId, skippop:true } })
             .then((response) => {
               var x = response.data[0]
+              // alert(JSON.stringify(x))
               var kids = []
               if (typ === 'question') {
                 kids = x.questions
@@ -149,10 +207,13 @@ export default {
     this.$store.commit('questView', false)
     this.$data.type = this.$route.params.type
     if (this.$data.type === 'update') {
+      // called by the route 'nodeupdate'
       this.$data.isUpdate = true
+      // myId is this node's identity; it's being updated
       this.$data.myId = this.$route.params.id
       this.doUpdate()
     } else {
+      // called by the route 'nodeedit'
       this.$data.parentId = this.$route.params.id
       this.$data.parentType = this.$route.params.parentType
       this.$data.parentLabel = this.$route.params.label

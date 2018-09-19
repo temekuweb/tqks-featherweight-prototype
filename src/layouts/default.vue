@@ -5,15 +5,13 @@
         color="primary"
         :glossy="false"
         :inverted="$q.theme === 'ios'"
-      >
-        
+      >  
         <q-btn
           flat
           dense
           round
           aria-label="Menu"
           @click="leftDrawerOpen = !leftDrawerOpen"
-
         >
         <q-icon name="menu" />
         </q-btn>
@@ -47,19 +45,18 @@
         </q-btn>
         <q-btn v-if="isQuestView" flat dense round
           aria-label="Tree View"
-          @click="rightDrawerOpen = !rightDrawerOpen"
+          @click="toggleNav"
         >
         <q-icon name="menu" />
         </q-btn>
-
       </q-toolbar>
     </q-layout-header>
-    <q-layout-drawer side = "right"
+    <!--<q-layout-drawer side = "right"
       v-model="rightDrawerOpen"
-
+      overlay
       no-hide-on-route-change
       :content-class="$q.theme === 'mat' ? 'bg-grey-2' : null">
-      <h4>Tree View</h4>
+      <h6 @click="rightDrawerOpen = false">Tree View</h6>
       <div>
         <q-tree v-if="simple"
           :nodes="simple"
@@ -68,11 +65,20 @@
           :selected.sync="selected"
         />
         </div>
-    </q-layout-drawer>
+    </q-layout-drawer>-->
+    <div id="mySidenav" class="sidenav">
+      <div>
+        <q-tree v-if="simple"
+          :nodes="simple"
+          node-key="id"
+          default-expand-all
+          :selected.sync="selected"
+        />
+      </div>
+    </div>
 
     <q-layout-drawer side = "left"
       v-model="leftDrawerOpen"
-
       no-hide-on-route-change
       :content-class="$q.theme === 'mat' ? 'bg-grey-2' : null">
 
@@ -87,9 +93,24 @@
           <q-item-main label="Home" />
         </q-item>
 
+        <q-item v-if="isAuthenticated" :to="{ name: 'profile', params: { id:  userId }}">
+          <q-item-side icon="settings" />
+          <q-item-main label="Profile" />
+        </q-item>
+
         <q-item to="/history">
           <q-item-side icon="history" />
           <q-item-main label="History" />
+        </q-item>
+
+        <q-item to="/bookmarks">
+          <q-item-side icon="bookmark" />
+          <q-item-main label="Bookmarks" />
+        </q-item>
+
+        <q-item to="/aboutb">
+          <q-item-side icon="help" />
+          <q-item-main label="Bookmarks Help" />
         </q-item>
 
         <q-item to="/quests">
@@ -97,11 +118,26 @@
           <q-item-main label="Quests" />
         </q-item>
 
-        <q-item to="/ether">
+        <q-item to="/aboutc">
+          <q-item-side icon="help" />
+          <q-item-main label="Quests Help" />
+        </q-item>
+
+        <q-item to="/tags">
+          <q-item-side icon="check_box" />
+          <q-item-main label="Tags" />
+        </q-item>
+
+        <q-item to="/aboutt">
+          <q-item-side icon="help" />
+          <q-item-main label="Tags Help" />
+        </q-item>
+
+    <!--    <q-item to="/ether">
           <q-item-side icon="language" />
           <q-item-main label="Etherpad Home" />
         </q-item>
-
+    -->
         <q-item v-if="isAdmin" to="/admin">
           <q-item-side icon="settings" />
           <q-item-main label="Admin" />
@@ -117,7 +153,6 @@
             This is a prototype <i>Structured Conversation</i> system.
           </p>
         </q-collapsible>
-
       </q-list>
     </q-layout-drawer>
 
@@ -143,6 +178,7 @@ export default {
       leftDrawerOpen: this.$q.platform.is.desktop,
       rightDrawerOpen: this.$store.getters.isQuestView,
       isAuthenticated: false,
+      userId: null,
       isAdmin: false,
       selected: null,
       search: ''
@@ -155,9 +191,13 @@ export default {
   },
   computed: {
     authenticated () {
-      let a = this.$store.getters.user !== null
+      let usx = this.$store.getters.user
+      let a =  usx !== null
       console.info('DA', a)
       console.info('DB', this.$store.getters.user)
+      if (usx) {
+        this.userId = usx._id
+      }
       return a
     },
     user () {
@@ -168,22 +208,23 @@ export default {
     },
     simple () {
       const tre = this.$store.getters.treeView
-      
-      // if (tre) {
-      //   const nod = tre[0]
-      //   console.log('NN', nod)
-      //   const generateHandler = (id) => (id) => this.myClick(id);
-      //   //tre.map(a => {
-      //     nod.handler = generateHandler(nod.id)
-      //   //})
-      // }
       return tre
     }
   },
   methods: {
-    patchTree (node) {
-
+    toggleNav () {
+      if (this.rightDrawerOpen) {
+        this.closeNav()
+      } else {
+        this.rightDrawerOpen = true
+        document.getElementById("mySidenav").style.width = "450px";
+      }
     },
+    closeNav () {
+      this.rightDrawerOpen = false
+      document.getElementById("mySidenav").style.width = "0";
+    },
+
     doSearch () {
       let q = this.search
       this.$router.push({ name: 'search', params: { q }})
@@ -273,7 +314,18 @@ export default {
 </script>
 
 <style>
-
+.sidenav {
+    height: 100%;
+    width: 0;
+    position: fixed;
+    z-index: 1;
+    top: 0;
+    right: 0;
+    background-color: rgb(218, 212, 212);
+    overflow-x: hidden;
+    transition: 0.5s;
+    padding-top: 60px;
+}
 img.q-tree-img.q-mr-sm {
     height: 20px;
 }

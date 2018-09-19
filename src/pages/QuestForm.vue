@@ -1,19 +1,73 @@
 <template>
-    <q-page :padding="true">
-        <h6>Quest Edit Form</h6>
-        <!-- todo -->
-        <div>
-            <h5>Subject</h5>
-            <q-input  v-model="label" />
-        </div>
-        <div>
-            <h5>Details</h5>
-            <q-editor v-model="details" />
-        </div>
-        <div>
-            <q-btn label="Submit" @click="doSubmit" /><q-btn label="Cancel" @click="$router.replace('/home')" />
-        </div>
-    </q-page>
+  <q-page :padding="true">
+      <h6>Quest Edit Form</h6>
+      <div>
+        <b>Subject</b><br/>
+        <q-input v-model="label" />
+      </div>
+      <div>
+        <b>URL</b> (Optional)<br/>
+        <q-input  v-model="url" />
+      </div>
+      <div>
+        <b>Details</b><br/>
+        <q-editor v-model="details"
+        :toolbar="[
+          ['bold', 'italic', 'strike', 'underline', 'subscript', 'superscript'],
+          ['token', 'hr', 'link', 'custom_btn'],
+          ['fullscreen'],
+          [
+            {
+              label: $q.i18n.editor.formatting,
+              icon: $q.icon.editor.formatting,
+              list: 'no-icons',
+              options: ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'code']
+            },
+            {
+              label: $q.i18n.editor.fontSize,
+              icon: $q.icon.editor.fontSize,
+              fixedLabel: true,
+              fixedIcon: true,
+              list: 'no-icons',
+              options: ['size-1', 'size-2', 'size-3', 'size-4', 'size-5', 'size-6', 'size-7']
+            },
+            {
+              label: $q.i18n.editor.defaultFont,
+              icon: $q.icon.editor.font,
+              fixedIcon: true,
+              list: 'no-icons',
+              options: ['default_font', 'arial', 'arial_black', 'comic_sans', 'courier_new', 'impact', 'lucida_grande', 'times_new_roman', 'verdana']
+            },
+            'removeFormat'
+          ],
+          ['quote', 'unordered', 'ordered', 'outdent', 'indent'],
+          [
+            {
+              label: $q.i18n.editor.align,
+              icon: $q.icon.editor.align,
+              fixedLabel: true,
+              list: 'only-icons',
+              options: ['left', 'center', 'right', 'justify']
+            }
+          ],
+          ['undo', 'redo']
+          ]"
+          :fonts="{
+            arial: 'Arial',
+            arial_black: 'Arial Black',
+            comic_sans: 'Comic Sans MS',
+            courier_new: 'Courier New',
+            impact: 'Impact',
+            lucida_grande: 'Lucida Grande',
+            times_new_roman: 'Times New Roman',
+            verdana: 'Verdana'
+          }"
+        />
+      </div>
+      <div>
+        <q-btn label="Submit" @click="doSubmit" /><q-btn label="Cancel" @click="$router.replace('/home')" />
+      </div>
+  </q-page>
 </template>
 
 <script>
@@ -27,6 +81,7 @@ export default {
     return {
       label: '',
       details: '',
+      url: '',
       user: this.$store.getters.user
     }
   },
@@ -38,6 +93,7 @@ export default {
       json.id = uuidv4()
       json.type = 'quest'
       json.label = this.label
+      json.url = this.url
       json.details = this.details
       json.img = 'statics/images/ibis/map.png'
       json.imgsm = 'statics/images/ibis/map_sm.png'

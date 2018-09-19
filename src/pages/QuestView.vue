@@ -2,15 +2,15 @@
   <q-page :padding="true" v-if="!!q">
 
     <div  id="topbox">
-      <span style="float:right; font-size:small;">{{q.handle}} {{q.date}}</span>
+      <span style="float:right; font-size:small;"><a :href="`/index.html#/userview/${q.creator}`">{{q.handle}}</a> {{q.date}}</span>
       <h4><img style="margin-right:4px;" :src="q.img">{{ q.label }}</h4>
-      <span v-if="q.url"><b>URL:</b> <a :href="q.url">{{ q.url}}</a><br/></span>
+      <span v-if="q.url"><b>URL:</b> <a :href="q.url">{{ q.url}}</a><br/><br/></span>
       <span v-if="q.parentLabel"><b>Responds to </b>
         <router-link :to="{ name: 'questview', params: { id: q.parentId }}">{{ q.parentLabel }}</router-link>
       </span>
       <hr/>
-      <q-scroll-area style="width: 960px; height: 400px; overflow-wrap: normal;">
-        <span v-html="q.details" style="overflow-wrap: inherit;"></span>
+      <q-scroll-area class="details">
+        <div  v-html="q.details"></div>
       </q-scroll-area>
     </div>
     <!-- Edit and other controls go here -->
@@ -24,7 +24,7 @@
               <img class="respond" src="statics/images/respond_sm.png"></a>
         </div>
         <div class="columnx" style="text-align: center;">
-              <img class="headerimage" src="statics/images/ibis/position.png">Ideas
+              <img class="headerimage" src="statics/images/ibis/position.png">Answers/Ideas
               <a v-if="isAuthenticated" :href="`/index.html#/nodeedit/answer/${q.type}/${q.id}/${q.label}`">
               <img class="respond" src="statics/images/respond_sm.png"></a>
         </div>
@@ -36,6 +36,11 @@
         <div class="columnx" style="text-align: center;">
               <img class="headerimage" src="statics/images/ibis/minus.png">Con
               <a v-if="isAuthenticated" :href="`/index.html#/nodeedit/con/${q.type}/${q.id}/${q.label}`">
+              <img class="respond" src="statics/images/respond_sm.png"></a>
+        </div>
+        <div class="columnx" style="text-align: center;">
+              <img class="headerimage" src="statics/images/tag.png">Tags
+              <a v-if="isAuthenticated" :href="`/index.html#/tagform/${q.id}`">
               <img class="respond" src="statics/images/respond_sm.png"></a>
         </div>
       </div>
@@ -60,6 +65,11 @@
             <router-link :to="{ name: 'questview', params: { id: con.id }}">{{ con.label }}</router-link>
           </q-item>
         </q-list>
+        <q-list class="datacolumn">
+          <q-item class="node" v-for="tag in q.tags" :key="tag.id">
+            <router-link :to="{ name: 'tagview', params: { id: tag.id }}">{{ tag.label }}</router-link>
+          </q-item>
+        </q-list>
       </div>
     </div>
   </q-page>
@@ -81,7 +91,6 @@ export default {
       setTimeout(() => {
         this.initialize.apply(this).then(() => {
           console.info('Router', 'done')
-          // next()
         })
       }, 500)
     },
@@ -93,9 +102,14 @@ export default {
         treeview.get(id)
           .then(function (tree) {
             console.info('QuestTreeView', tree)
-            const result = []
-            result.push(tree)
-            self.$store.commit('tree', result)
+            const img = tree.img
+            // only show the tree if the root is a map
+            if (img === 'statics/images/ibis/map_sm.png' ||
+                img === 'statics/images/bookmark_sm.png') {
+              const result = []
+              result.push(tree)
+              self.$store.commit('tree', result)
+            }
           })     
       } catch (err) {
         console.log('QuestViewTreeError', err)
@@ -122,15 +136,15 @@ export default {
       async initialize (id = null) {
         this.$store.commit('questView', true)
         console.info('QV-1', id)
-          id = id || this.$route.params.id
-          console.info('Initialize', 'fetching data for ', id)
-          try {
-            const single = await this.$store.dispatch('conversation/get', [id, { depth: 1 }])
-            console.info('Initialize', 'fetching data for ', id, 'success')
-            console.info('SINGLE', JSON.stringify(single))
-          } catch (e) {
-            console.info('Initialize', 'fetching data for ', id, 'error', e)
-          }
+        id = id || this.$route.params.id
+        console.info('Initialize', 'fetching data for ', id)
+        try {
+          const single = await this.$store.dispatch('conversation/get', [id, { depth: 1 }])
+          console.info('Initialize', 'fetching data for ', id, 'success')
+          console.info('SINGLE', JSON.stringify(single))
+        } catch (e) {
+          console.info('Initialize', 'fetching data for ', id, 'error', e)
+        }
       }
     },
     computed: {
@@ -165,6 +179,20 @@ export default {
 </script>
 
 <style lang="styl">
+.scroll.relative-position.overflow-hidden.fit.q-touch {
+    user-select: auto !important;
+}
+.details {
+  max-width: 960px; 
+  height: 400px; 
+  overflow-wrap: normal;
+}
+.spanwrap {
+  float: left;
+  word-wrap: normal;
+  white-space: normal;
+  overflow-wrap: inherit;
+}
 /**
  * Enable columns to scroll right and left
  */
@@ -185,7 +213,7 @@ export default {
  * The formula seems to be column width * num colums + 100px  2500
  */
 .columncontainer {
-  width: 1200px;
+  width: 1400px;
 }
 
 .columnx {
@@ -216,7 +244,7 @@ export default {
 }
 
 .datacontainer {
-  width: 1200px;
+  width: 1400px;
 }
 
 .headerimage {
